@@ -1,0 +1,30 @@
+{
+  "name": "tech_b",
+  "version": "1.0.0",
+  "description": "Blog website using server side rendering",
+  "keywords": [
+    "blog",
+    "tech",
+    "content"
+  ],
+  "homepage": "https://github.com/mdmakky/Tech_B#readme",
+  "bugs": {
+    "url": "https://github.com/mdmakky/Tech_B/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mdmakky/Tech_B.git"
+  },
+  "license": "ISC",
+  "author": "md. arafatuzzaman",
+  "type": "module",
+  "main": "index.js",
+  "start": "node index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "express": "^5.2.1",
+    "nodemon": "^3.1.14"
+  }
+}
