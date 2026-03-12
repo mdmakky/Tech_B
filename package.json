@@ -19,12 +19,16 @@
   "author": "md. arafatuzzaman",
   "type": "module",
   "main": "index.js",
-  "start": "node index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "nodemon index.js"
   },
   "dependencies": {
+    "dotenv": "^17.3.1",
+    "ejs": "^5.0.1",
     "express": "^5.2.1",
-    "nodemon": "^3.1.14"
+    "nodemon": "^3.1.14",
+    "path": "^0.12.7",
+    "pg": "^8.20.0"
   }
 }
