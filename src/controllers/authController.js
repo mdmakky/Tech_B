@@ -15,19 +15,19 @@ const authController = {
             if (!username || !email || !password || !confirmPassword) {
                 console.log("Missing fields in request body");
                 req.session.error = "All fields are required!";
-                return res.redirect('/register');
+                return res.redirect('/auth/register');
             }
 
             if (password !== confirmPassword) {
                 console.log("Passwords do not match");
                 req.session.error = "Password does not match.";
-                return res.redirect('/register');
+                return res.redirect('/auth/register');
             }
 
             if (password.length < 6) {
                 console.log("Password too short");
                 req.session.error = "Password must be at least 6 characters.";
-                return res.redirect('/register');
+                return res.redirect('/auth/register');
             }
 
             const emailExists = await userModel.emailExists(email);
@@ -35,7 +35,7 @@ const authController = {
             if (emailExists) {
                 console.log("This email is alredy in use");
                 req.session.error = "This email is already in use";
-                return res.redirect('/register');
+                return res.redirect('/auth/register');
             }
 
             const userExists = await userModel.usernameExists(username);
@@ -43,7 +43,7 @@ const authController = {
             if (userExists) {
                 console.log("This username is alredy in use");
                 req.session.error = "This username is already taken.";
-                return res.redirect('/register');
+                return res.redirect('/auth/register');
             }
 
             const hashPassword = await bcrypt.hash(password, 12);
@@ -53,39 +53,39 @@ const authController = {
 
             req.session.user = { id: user.id, username: user.username, role: user.role }
             req.session.success = `Welcome ${user.username}! Account created successfully.`
-            res.redirect('/');
+            return res.redirect('/');
 
         } catch (error) {
             console.log("Error while creating account.\n", error);
             req.session.error = "Something went wrong. Try again later."
-            res.redirect('/register');
+            return res.redirect('/auth/register');
         }
     },
 
-
+ 
     showLogin(req, res) {
         if (req.session.user) {
             return res.redirect("/")
         }
-        res.render("auth/login", { title: "Login" })
+        return res.render("/auth/login", { title: "Login" })
     },
-
+  
     async login(req, res) {
         try {
             const { email, password } = req.body;
             const mailExists = await userModel.emailExists(email)
             if (!mailExists) {
                 console.log("Email does not exist with a corrosponding account")
-                res.session.error = "Invalid email id.."
-                return res.redirect('/login')
+                req.session.error = "Invalid email id.."
+                return res.redirect('/auth/login')
             }
             const user = await userModel.findByEmail(email)
             const passwordMatch = await bcrypt.compare(password, user.password)
             
             if (!passwordMatch) {
                 console.log("Invalid password")
-                res.session.error = 'Invalid password.';
-                res.redirect('/login');
+                req.session.error = 'Invalid password.';
+                return res.redirect('/auth/login');
             }
  
             req.session.user = {
@@ -96,11 +96,11 @@ const authController = {
 
             req.session.success = `Welcome back ${user.username}.`
             console.log(`Welcome back ${user.username}.`)
-            res.redirect('/')
+            return res.redirect('/')
         } catch (error) {
             console.log('Login error, \nError:', error);
             req.session.error = 'Error while logging. Please try again later';
-            req.redirect('/login');
+            return res.redirect('/auth/login');
         }
 
     },
@@ -118,7 +118,7 @@ const authController = {
             secure: process.env.NODE_ENV === 'production'
         });
 
-        res.redirect('/login');
+        return res.redirect('/auth/login');
     });
 
     }

@@ -20,10 +20,13 @@ app.use(express.static(path.join(__dirname,"src/public")))
 app.use(sessionMiddleWare)
 app.use(globalVars)
 // Routes
-app.use("/", authRoute) 
+app.use("/auth", authRoute)  
+app.get('/', (req, res) => {
+    res.render('layouts/main')
+})
 
-app.use(notFound)
-app.use(serverError)
+// app.use(notFound)
+// app.use(serverError)
 
 checkDB()
 
