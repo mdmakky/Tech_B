@@ -67,7 +67,7 @@ const authController = {
         if (req.session.user) {
             return res.redirect("/")
         }
-        return res.render("/auth/login", { title: "Login" })
+        return res.render("auth/login", { title: "Login" })
     },
   
     async login(req, res) {
@@ -95,7 +95,7 @@ const authController = {
             }
 
             req.session.success = `Welcome back ${user.username}.`
-            console.log(`Welcome back ${user.username}.`)
+            // console.log(`Welcome back ${user.username}.`)
             return res.redirect('/')
         } catch (error) {
             console.log('Login error, \nError:', error);

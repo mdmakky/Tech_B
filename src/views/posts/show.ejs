@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>
+        <%= title %>
+    </title>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            background: radial-gradient(circle at top, #0f172a, #020617);
+        }
+
+        .tag {
+            @apply text-sm bg-blue-600/20 text-blue-400 rounded-full px-3 py-1 mr-2 mb-2 inline-block;
+        }
+    </style>
+</head>
+
+<body class="text-gray-200 font-sans">
+
+    <div class="max-w-5xl mx-auto py-12 px-6">
+
+        <!-- Post Header -->
+        <div class="mb-10">
+            <h1 class="text-5xl font-bold tracking-tight mb-4">
+                <%= post.title %>
+            </h1>
+            <div class="flex items-center text-gray-400 text-sm space-x-4">
+                <span>By <strong>
+                        <%= post.author_name %>
+                    </strong></span>
+                <span>•</span>
+                <span>
+                    <%= new Date(post.created_at).toLocaleDateString() %>
+                </span>
+                <span>•</span>
+                <span>
+                    <%= post.view_count %> views
+                </span>
+            </div>
+
+            <!-- Tags -->
+            <div class="mt-4">
+                <% if (post.tags) { post.tags.split(',').forEach(tag=> { %>
+                    <span class="tag">
+                        <%= tag.trim() %>
+                    </span>
+                    <% }) } %>
+            </div>
+        </div>
+
+        <!-- Post Content -->
+        <div class="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-8 shadow-xl overflow-x-auto">
+            <pre class="whitespace-pre-wrap text-gray-200"><%= post.content %></pre>
+        </div>
+
+        <!-- Voting -->
+        <div class="flex items-center mt-6 space-x-4">
+            <form action="/posts/<%= post.slug %>/vote" method="POST" class="flex items-center gap-2">
+                <input type="hidden" name="vote" value="up">
+                <button type="submit" class="px-3 py-1 bg-green-600 hover:bg-green-700 rounded">👍 <%= post.upvotes %>
+                        </button>
+            </form>
+            <form action="/posts/<%= post.slug %>/vote" method="POST" class="flex items-center gap-2">
+                <input type="hidden" name="vote" value="down">
+                <button type="submit" class="px-3 py-1 bg-red-600 hover:bg-red-700 rounded">👎 <%= post.downvotes %>
+                        </button>
+            </form>
+        </div>
+
+        <!-- Comments Section -->
+        <div class="mt-12">
+            <h2 class="text-2xl font-semibold mb-4">Comments</h2>
+
+            <% if (comments.length===0) { %>
+                <p class="text-gray-400">No comments yet. Be the first to comment!</p>
+                <% } else { %>
+                    <% comments.forEach(comment=> { %>
+                        <div class="mb-4 p-4 bg-white/5 border border-white/10 rounded-xl">
+                            <div class="flex justify-between items-center mb-2">
+                                <span class="font-semibold text-gray-200">
+                                    <%= comment.author_name %>
+                                </span>
+                                <span class="text-sm text-gray-400">
+                                    <%= new Date(comment.created_at).toLocaleString() %>
+                                </span>
+                            </div>
+                            <p>
+                                <%= comment.content %>
+                            </p>
+                        </div>
+                        <% }) %>
+                            <% } %>
+
+                                <!-- Add Comment Form -->
+                                <% if (session && session.user) { %>
+                                    <form action="/posts/<%= post.slug %>/comments" method="POST"
+                                        class="mt-6 space-y-4">
+                                        <textarea name="content" placeholder="Add a comment..." rows="3" required
+                                            class="w-full bg-transparent border border-white/10 rounded-lg p-3 focus:border-blue-500 outline-none"></textarea>
+                                        <button type="submit"
+                                            class="bg-blue-600 hover:bg-blue-700 px-6 py-2 rounded-lg font-medium transition">Post
+                                            Comment</button>
+                                    </form>
+                                    <% } else { %>
+                                        <p class="text-gray-400 mt-4">Please <a href="/login"
+                                                class="text-blue-400 hover:text-blue-300 underline">login</a> to
+                                            comment.</p>
+                                        <% } %>
+        </div>
+
+    </div>
+
+</body>
+
+</html>
