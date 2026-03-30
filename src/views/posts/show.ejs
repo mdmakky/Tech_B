@@ -2,119 +2,284 @@
 <html lang="en">
 
 <head>
-    <meta charset="UTF-8">
-    <title>
-        <%= title %>
-    </title>
-
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        body {
-            background: radial-gradient(circle at top, #0f172a, #020617);
-        }
-
-        .tag {
-            @apply text-sm bg-blue-600/20 text-blue-400 rounded-full px-3 py-1 mr-2 mb-2 inline-block;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <%- include('../partials/seo-head') %>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="/css/style.css">
 </head>
 
-<body class="text-gray-200 font-sans">
+<body>
 
-    <div class="max-w-5xl mx-auto py-12 px-6">
+  <%- include('../partials/navbar') %>
 
-        <!-- Post Header -->
-        <div class="mb-10">
-            <h1 class="text-5xl font-bold tracking-tight mb-4">
-                <%= post.title %>
-            </h1>
-            <div class="flex items-center text-gray-400 text-sm space-x-4">
-                <span>By <strong>
-                        <%= post.author_name %>
-                    </strong></span>
-                <span>•</span>
-                <span>
-                    <%= new Date(post.created_at).toLocaleDateString() %>
-                </span>
-                <span>•</span>
-                <span>
-                    <%= post.view_count %> views
-                </span>
+  <div class="post-page">
+
+    <!-- Flash Messages -->
+    <% if (success) { %>
+      <div class="alert alert-success">✅ <%= success %></div>
+    <% } %>
+    <% if (error) { %>
+      <div class="alert alert-error">❌ <%= error %></div>
+    <% } %>
+
+    <!-- Post Header -->
+    <article>
+      <header class="post-header">
+        <!-- Tags -->
+        <% if (post.tags) { %>
+          <div class="post-tags" style="margin-bottom:16px">
+            <% post.tags.split(',').forEach(tag => { %>
+              <span class="badge badge-accent">#<%= tag.trim() %></span>
+            <% }) %>
+          </div>
+        <% } %>
+
+        <h1 class="post-title"><%= post.title %></h1>
+
+        <div class="post-meta-row">
+          <div style="display:flex;align-items:center;gap:8px">
+            <div style="width:24px;height:24px;border-radius:50%;overflow:hidden;border:1px solid rgba(99,102,241,0.4)">
+              <img src="https://api.dicebear.com/7.x/initials/svg?seed=<%= post.author_name %>"
+                   alt="" loading="lazy" style="width:100%;height:100%;object-fit:cover">
             </div>
+            <span>By <strong style="color:var(--text-secondary)"><%= post.author_name %></strong></span>
+          </div>
+          <span class="post-meta-dot"></span>
+          <span><%= new Date(post.created_at).toLocaleDateString('en-US', { year:'numeric', month:'long', day:'numeric' }) %></span>
+          <span class="post-meta-dot"></span>
+          <span class="post-meta-views">
+            <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="flex-shrink:0">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+            </svg>
+            <%= post.view_count %> views
+          </span>
+          <% if (!post.is_published) { %>
+            <span class="badge badge-amber">DRAFT</span>
+          <% } %>
+        </div>
+      </header>
 
-            <!-- Tags -->
-            <div class="mt-4">
-                <% if (post.tags) { post.tags.split(',').forEach(tag=> { %>
-                    <span class="tag">
-                        <%= tag.trim() %>
-                    </span>
-                    <% }) } %>
+      <div class="post-divider"></div>
+
+      <!-- Post Content -->
+      <div class="prose">
+        <%- contentHtml %>
+      </div>
+
+      <!-- Voting -->
+      <div class="vote-bar">
+        <span class="vote-label">Was this article helpful?</span>
+        <% if (currentUser) { %>
+          <form action="/votes/<%= post.id %>/up" method="POST" style="display:inline">
+            <button type="submit" class="vote-btn <%= userVote === 'up' ? 'up-active' : '' %>">
+              👍 <span><%= post.upvotes %></span>
+            </button>
+          </form>
+          <form action="/votes/<%= post.id %>/down" method="POST" style="display:inline">
+            <button type="submit" class="vote-btn <%= userVote === 'down' ? 'down-active' : '' %>">
+              👎 <span><%= post.downvotes %></span>
+            </button>
+          </form>
+        <% } else { %>
+          <span style="color:var(--text-muted);font-size:0.875rem">👍 <%= post.upvotes %> &nbsp; 👎 <%= post.downvotes %></span>
+          <a href="/auth/login" class="btn btn-secondary btn-sm">Login to vote</a>
+        <% } %>
+      </div>
+
+      <!-- Social Share -->
+      <div class="share-bar">
+        <span class="share-label">Share:</span>
+        <a href="https://www.facebook.com/sharer/sharer.php?u=<%= encodeURIComponent((process.env.APP_URL || 'http://localhost:8080') + '/posts/' + post.slug) %>"
+           target="_blank" rel="noopener noreferrer" class="share-btn share-fb">
+          📘 Facebook
+        </a>
+        <a href="https://www.linkedin.com/shareArticle?mini=true&url=<%= encodeURIComponent((process.env.APP_URL || 'http://localhost:8080') + '/posts/' + post.slug) %>&title=<%= encodeURIComponent(post.title) %>"
+           target="_blank" rel="noopener noreferrer" class="share-btn share-li">
+          💼 LinkedIn
+        </a>
+        <button onclick="copyLink('<%= (process.env.APP_URL || 'http://localhost:8080') + '/posts/' + post.slug %>')"
+                class="share-btn share-copy">
+          🔗 Copy Link
+        </button>
+      </div>
+
+      <!-- Author Card -->
+      <div class="author-card">
+        <div class="author-card-avatar">
+          <img src="https://api.dicebear.com/7.x/initials/svg?seed=<%= post.author_name %>"
+               alt="<%= post.author_name %>" loading="lazy">
+        </div>
+        <div class="author-card-info">
+          <div class="author-card-name"><%= post.author_name %></div>
+          <p class="author-card-bio">
+            <%= post.author_bio || 'No bio available.' %>
+          </p>
+          <% if (currentUser && currentUser.id !== post.author_id) { %>
+            <form action="/follow/<%= post.author_id %>" method="POST" style="display:inline">
+              <button type="submit" class="btn btn-primary btn-sm">➕ Follow Author</button>
+            </form>
+          <% } %>
+        </div>
+      </div>
+
+      <!-- Post Actions (Owner / Admin) -->
+      <% if (currentUser && (currentUser.id === post.author_id || currentUser.role === 'admin')) { %>
+        <div class="post-actions-bar">
+          <span class="post-actions-label">⚙️ Post Management</span>
+          <a href="/posts/<%= post.slug %>/edit" class="btn btn-warning btn-sm">✏️ Edit</a>
+          <form action="/posts/<%= post.slug %>/delete" method="POST" style="display:inline"
+                onsubmit="return confirmDelete()">
+            <button type="submit" class="btn btn-danger btn-sm">🗑️ Delete</button>
+          </form>
+        </div>
+      <% } %>
+    </article>
+
+    <!-- =====================================
+         COMMENTS SECTION
+         ===================================== -->
+    <section class="comments-section" id="comments">
+      <h2 class="comments-heading">
+        💬 Discussion
+        <span class="badge badge-accent"><%= comments.length %></span>
+      </h2>
+
+      <!-- Comment Form -->
+      <% if (currentUser) { %>
+        <form action="/comments/add" method="POST" class="comment-form">
+          <input type="hidden" name="post_id" value="<%= post.id %>">
+          <input type="hidden" name="post_slug" value="<%= post.slug %>">
+          <div class="form-group">
+            <textarea name="content" rows="3" required
+                      placeholder="Share your thoughts..."
+                      class="form-input form-textarea"
+                      style="resize:none"></textarea>
+          </div>
+          <div style="display:flex;justify-content:flex-end;margin-top:12px">
+            <button type="submit" class="btn btn-primary btn-sm">Post Comment</button>
+          </div>
+        </form>
+      <% } else { %>
+        <div class="login-prompt">
+          <a href="/auth/login">Login</a> to join the discussion.
+        </div>
+      <% } %>
+
+      <!-- Comment List -->
+      <% if (comments.length === 0) { %>
+        <div style="text-align:center;padding:40px;color:var(--text-muted)">
+          <p style="font-size:2rem;margin-bottom:8px">💭</p>
+          <p>No comments yet — be the first to start the discussion!</p>
+        </div>
+      <% } %>
+
+      <% comments.forEach(comment => { %>
+        <div class="comment-card">
+          <!-- Header -->
+          <div class="comment-header">
+            <div class="comment-author">
+              <div class="comment-avatar">
+                <img src="https://api.dicebear.com/7.x/initials/svg?seed=<%= comment.author_name %>"
+                     alt="<%= comment.author_name %>" loading="lazy">
+              </div>
+              <div>
+                <div class="comment-name"><%= comment.author_name %></div>
+                <div class="comment-time">
+                  <%= new Date(comment.created_at).toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' }) %>
+                </div>
+              </div>
             </div>
+            <% if (currentUser && (currentUser.id === comment.user_id || currentUser.role === 'admin')) { %>
+              <form action="/comments/<%= comment.id %>/delete" method="POST" style="display:inline">
+                <button type="submit" class="btn btn-danger btn-sm"
+                        onclick="return confirm('Delete this comment?')">Delete</button>
+              </form>
+            <% } %>
+          </div>
+
+          <!-- Content -->
+          <p class="comment-content"><%= comment.content %></p>
+
+          <!-- Reply Toggle -->
+          <% if (currentUser) { %>
+            <button class="reply-toggle" onclick="toggleReply('reply-<%= comment.id %>')">
+              ↩ Reply
+            </button>
+            <div class="reply-form-wrap" id="reply-<%= comment.id %>">
+              <form action="/comments/add" method="POST" style="margin-top:12px">
+                <input type="hidden" name="post_id" value="<%= post.id %>">
+                <input type="hidden" name="post_slug" value="<%= post.slug %>">
+                <input type="hidden" name="parent_id" value="<%= comment.id %>">
+                <textarea name="content" rows="2" required
+                          placeholder="Write a reply..."
+                          class="form-input form-textarea"
+                          style="resize:none;font-size:0.875rem;margin-bottom:8px"></textarea>
+                <div style="display:flex;gap:8px;justify-content:flex-end">
+                  <button type="button" class="btn btn-secondary btn-sm"
+                          onclick="toggleReply('reply-<%= comment.id %>')">Cancel</button>
+                  <button type="submit" class="btn btn-primary btn-sm">Post Reply</button>
+                </div>
+              </form>
+            </div>
+          <% } %>
+
+          <!-- Nested Replies -->
+          <% if (comment.replies && comment.replies.length > 0) { %>
+            <div class="replies">
+              <% comment.replies.forEach(reply => { %>
+                <div class="reply-card">
+                  <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px">
+                    <div class="comment-author">
+                      <div class="comment-avatar" style="width:26px;height:26px">
+                        <img src="https://api.dicebear.com/7.x/initials/svg?seed=<%= reply.author_name %>"
+                             alt="<%= reply.author_name %>" loading="lazy">
+                      </div>
+                      <div>
+                        <div class="comment-name" style="font-size:0.8125rem"><%= reply.author_name %></div>
+                        <div class="comment-time"><%= new Date(reply.created_at).toLocaleDateString('en-US', { month:'short', day:'numeric' }) %></div>
+                      </div>
+                    </div>
+                    <% if (currentUser && (currentUser.id === reply.user_id || currentUser.role === 'admin')) { %>
+                      <form action="/comments/<%= reply.id %>/delete" method="POST" style="display:inline">
+                        <button type="submit" class="btn btn-danger btn-sm"
+                                onclick="return confirm('Delete this reply?')">Delete</button>
+                      </form>
+                    <% } %>
+                  </div>
+                  <p style="font-size:0.875rem;color:var(--text-secondary);line-height:1.65"><%= reply.content %></p>
+                </div>
+              <% }) %>
+            </div>
+          <% } %>
         </div>
+      <% }) %>
+    </section>
 
-        <!-- Post Content -->
-        <div class="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-8 shadow-xl overflow-x-auto">
-            <pre class="whitespace-pre-wrap text-gray-200"><%= post.content %></pre>
-        </div>
+  </div>
 
-        <!-- Voting -->
-        <div class="flex items-center mt-6 space-x-4">
-            <form action="/posts/<%= post.slug %>/vote" method="POST" class="flex items-center gap-2">
-                <input type="hidden" name="vote" value="up">
-                <button type="submit" class="px-3 py-1 bg-green-600 hover:bg-green-700 rounded">👍 <%= post.upvotes %>
-                        </button>
-            </form>
-            <form action="/posts/<%= post.slug %>/vote" method="POST" class="flex items-center gap-2">
-                <input type="hidden" name="vote" value="down">
-                <button type="submit" class="px-3 py-1 bg-red-600 hover:bg-red-700 rounded">👎 <%= post.downvotes %>
-                        </button>
-            </form>
-        </div>
+  <%- include('../partials/footer') %>
 
-        <!-- Comments Section -->
-        <div class="mt-12">
-            <h2 class="text-2xl font-semibold mb-4">Comments</h2>
+  <script>
+    function confirmDelete() {
+      return confirm('Delete this post permanently? This cannot be undone.');
+    }
 
-            <% if (comments.length===0) { %>
-                <p class="text-gray-400">No comments yet. Be the first to comment!</p>
-                <% } else { %>
-                    <% comments.forEach(comment=> { %>
-                        <div class="mb-4 p-4 bg-white/5 border border-white/10 rounded-xl">
-                            <div class="flex justify-between items-center mb-2">
-                                <span class="font-semibold text-gray-200">
-                                    <%= comment.author_name %>
-                                </span>
-                                <span class="text-sm text-gray-400">
-                                    <%= new Date(comment.created_at).toLocaleString() %>
-                                </span>
-                            </div>
-                            <p>
-                                <%= comment.content %>
-                            </p>
-                        </div>
-                        <% }) %>
-                            <% } %>
+    function copyLink(url) {
+      navigator.clipboard.writeText(url).then(() => {
+        alert('Link copied to clipboard!');
+      }).catch(() => {
+        prompt('Copy this link:', url);
+      });
+    }
 
-                                <!-- Add Comment Form -->
-                                <% if (session && session.user) { %>
-                                    <form action="/posts/<%= post.slug %>/comments" method="POST"
-                                        class="mt-6 space-y-4">
-                                        <textarea name="content" placeholder="Add a comment..." rows="3" required
-                                            class="w-full bg-transparent border border-white/10 rounded-lg p-3 focus:border-blue-500 outline-none"></textarea>
-                                        <button type="submit"
-                                            class="bg-blue-600 hover:bg-blue-700 px-6 py-2 rounded-lg font-medium transition">Post
-                                            Comment</button>
-                                    </form>
-                                    <% } else { %>
-                                        <p class="text-gray-400 mt-4">Please <a href="/login"
-                                                class="text-blue-400 hover:text-blue-300 underline">login</a> to
-                                            comment.</p>
-                                        <% } %>
-        </div>
-
-    </div>
+    function toggleReply(id) {
+      const el = document.getElementById(id);
+      el.classList.toggle('open');
+    }
+  </script>
 
 </body>
-
 </html>

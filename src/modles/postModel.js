@@ -40,10 +40,10 @@ const postModel = {
 
     async findPostByUser(userId) {
         const result = await pool.query(
-            `SELECT id, title, slug, is_published, view_count, created_at
+            `SELECT id, title, content, slug, is_published, view_count, created_at
              FROM posts
              WHERE author_id = $1
-             ORDER BY created_at DESC`, [userId]
+             ORDER BY created_at DESC`, [userId]  
         );
         return result.rows;
     },

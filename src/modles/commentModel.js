@@ -10,9 +10,17 @@ const commentModel = {
              ORDER BY c.created_at ASC`, [post_id]
         )
 
+        const replies = await pool.query(
+            `SELECT c.*, u.username AS author_name
+             FROM comments c
+             JOIN users u ON c.user_id = u.id
+             WHERE c.post_id = $1 AND c.parent_id IS NOT NULL
+             ORDER BY c.created_at ASC`, [post_id]
+        )
+
         const commentWithReplies = comments.rows.map(comment => ({
             ...comment,
-            replaies: replaies.rows.filter(replay => replay.parent_id = comment.id)
+            replies: replies.rows.filter(reply => reply.parent_id === comment.id)
         }))
 
         return commentWithReplies;

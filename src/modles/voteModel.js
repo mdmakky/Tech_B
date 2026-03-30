@@ -13,7 +13,7 @@ const voteModel = {
     async toggleVote(post_id , user_id , vote_type){
         const existing_vote = await this.getUserVote(post_id, user_id)
         if(existing_vote === vote_type){
-            pool.query(`
+            await pool.query(`
                 DELETE FROM votes WHERE post_id = $1 AND user_id = $2
                 `, [post_id, user_id])
                 return null;

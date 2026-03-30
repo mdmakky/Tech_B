@@ -1,0 +1,24 @@
+<title><%= title %> | TechBlog</title>
+
+<!-- Standard SEO meta tags -->
+<meta name="description" content="<%= typeof metaDescription !== 'undefined' && metaDescription ? metaDescription : 'A modern tech blog platform — programming tutorials, AI, and development insights.' %>">
+<% if (typeof metaKeywords !== 'undefined' && metaKeywords) { %>
+<meta name="keywords" content="<%= metaKeywords %>">
+<% } %>
+<meta name="author" content="<%= typeof post !== 'undefined' ? post.author_name : 'TechBlog' %>">
+<meta name="robots" content="index, follow">
+
+<!-- Open Graph (Facebook share) -->
+<meta property="og:title" content="<%= title %>">
+<meta property="og:description" content="<%= typeof metaDescription !== 'undefined' ? metaDescription : '' %>">
+<meta property="og:type" content="<%= typeof post !== 'undefined' ? 'article' : 'website' %>">
+<meta property="og:url" content="<%= (process.env.APP_URL || 'http://localhost:8080') + (typeof post !== 'undefined' ? '/posts/' + post.slug : '') %>">
+<meta property="og:site_name" content="TechBlog">
+
+<!-- Twitter Card -->
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="<%= title %>">
+<meta name="twitter:description" content="<%= typeof metaDescription !== 'undefined' ? metaDescription : '' %>">
+
+<!-- Canonical URL -->
+<link rel="canonical" href="<%= (process.env.APP_URL || 'http://localhost:8080') + (typeof post !== 'undefined' ? '/posts/' + post.slug : '') %>">

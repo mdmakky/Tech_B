@@ -6,11 +6,13 @@ import { marked, Marked } from "marked";
 import slugify from "slugify";
 
 const postController = {
+    // Homepage — featured/hero layout
     async index(req, res) {
         try {
             const posts = await postModel.getAllPublished()   
-            res.render("index", {
-                title: "Tech Blog",
+            res.render("posts/index", {
+                title: "TechNest — Developer Blog",
+                metaDescription: "Deep dives into programming, AI, and system design.",
                 posts
             })
         } catch (err) {
@@ -20,7 +22,25 @@ const postController = {
                 message: "Failed to load homepage"
             })
         }
-    }, 
+    },
+
+    // Articles listing page — grid layout, different from homepage
+    async showArticles(req, res) {
+        try {
+            const posts = await postModel.getAllPublished()   
+            res.render("posts/articles", {
+                title: "All Articles | TechNest",
+                metaDescription: "Browse all published articles on TechNest.",
+                posts
+            })
+        } catch (err) {
+            console.log("Error loading articles:", err)
+            res.status(500).render("error/error", {
+                title: "Error",
+                message: "Failed to load articles"
+            })
+        }
+    },
  
     async show(req, res) {
         try {
@@ -37,7 +57,15 @@ const postController = {
                 }
             }
 
-            await postModel.incrementViews(post.id)
+            // --- View count deduplication via session ---
+            // Only count one view per user/visitor per post per session
+            if (!req.session.viewedPosts) req.session.viewedPosts = {};
+            if (!req.session.viewedPosts[post.id]) {
+                req.session.viewedPosts[post.id] = true;
+                await postModel.incrementViews(post.id);
+                // Reflect the incremented count in the post object
+                post.view_count = parseInt(post.view_count || 0) + 1;
+            }
             const comments = await commentModel.findCommentByPost(post.id);
             let userVote = null;
             if (req.session.user) {
@@ -47,13 +75,12 @@ const postController = {
 
             res.render('posts/show', {
                 title: post.meta_title || post.title,
-                metaDespription: post.meta_despription || post.excerpt || "",
+                metaDescription: post.meta_description || post.excerpt || "",
                 metaKeywords: post.meta_keywords || post.tags || "",
                 post,
                 contentHtml,
                 comments,
                 userVote,
-                session: req.session
             }) 
 
         } catch (error) {
@@ -94,7 +121,6 @@ const postController = {
                 author_id: req.session.user.id
             })
             req.session.success = "Post created successfully";
-            // console.log("Post created success",post)//remove later
             res.redirect(`/posts/${post.slug}`)
 
 
@@ -103,13 +129,13 @@ const postController = {
             req.session.error = "Failed to create post",
                 res.redirect("/posts/create");
         }
-    },
+    }, 
  
     async showEditePost(req, res) {
         try {
             const post = await postModel.findPostBySlug(req.params.slug)
             if (!post) {
-                return res.status(403).render('404', { title: "Not found!!" })
+                return res.status(404).render('error/error', { title: "Not Found", message: "Post not found." })
             }
             const user = req.session.user;
             if (user.id !== post.author_id && user.role !== "admin") {
@@ -127,7 +153,7 @@ const postController = {
         try {
             const post = await postModel.findPostBySlug(req.params.slug)
             if (!post) {
-                return res.status(403).render('404', { title: "Not found!!" })
+                return res.status(404).render('error/error', { title: "Not Found", message: "Post not found." })
             }
             const user = req.session.user;
             if (user.id !== post.author_id && user.role !== "admin") {
@@ -140,11 +166,11 @@ const postController = {
                 slug = slugify(title, { lower: true, strict: true })
                 const existing = await postModel.findPostBySlug(slug)
                 if (existing && existing.id !== post.id) {
-                    slug = `${slug}- ${Date.now()}`
+                    slug = `${slug}-${Date.now()}`
                 }
             }
 
-            const updated = await postModel.updatePost(id, {
+            const updated = await postModel.updatePost(post.id, {
                 title, slug, content, excerpt, meta_title, meta_description, meta_keywords, tags,
                 is_published: is_published === 'true'
             })
@@ -161,8 +187,8 @@ const postController = {
 
     async deletePost(req, res) {
         try {
-            const post = postModel.deletePost(req.params.slug)
-            if (!post) return res.status(404).render('404', { title: "Not Found." })
+            const post = await postModel.findPostBySlug(req.params.slug)
+            if (!post) return res.status(404).render('error/404', { title: "Not Found." })
 
             const user = req.session.user
             if (user.id !== post.author_id && user.role !== 'admin') {

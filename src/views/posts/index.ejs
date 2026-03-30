@@ -2,85 +2,194 @@
 <html lang="en">
 
 <head>
-    <meta charset="UTF-8">
-    <title>
-        <%= title %>
-    </title>
-    <!-- Tailwind -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        body {
-            background: radial-gradient(circle at top, #0f172a, #020617);
-        }
-
-        .post-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 20px 30px rgba(0, 0, 0, 0.5);
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= title %></title>
+  <meta name="description" content="<%= metaDescription || 'TechNest — Deep dives into programming, AI, system design, and the tech stories that matter.' %>">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="/css/style.css">
 </head>
 
-<body class="text-gray-200 font-sans">
+<body>
 
-    <!-- Navbar -->
+  <!-- Ambient background effects -->
+  <div class="home-bg" aria-hidden="true"></div>
+  <div class="orb orb-1" aria-hidden="true"></div>
+  <div class="orb orb-2" aria-hidden="true"></div>
+  <div class="orb orb-3" aria-hidden="true"></div>
+
+  <div class="page-wrap">
     <%- include('../partials/navbar') %>
 
-        <!-- Hero Section -->
-        <section class="text-center py-20">
-            <h1 class="text-5xl font-bold text-white mb-4">Welcome to TechNest Blog</h1>
-            <p class="text-gray-400 max-w-2xl mx-auto">
-                Stay updated with the latest tech trends, tutorials, and insights from our experts.
-            </p>
-        </section>
+    <!-- =============================================
+         HERO SECTION
+         ============================================= -->
+    <section class="hero-section">
+      <div class="hero-container">
+        <div class="hero-glow"></div>
+        
+        <div class="hero-content">
+          <div class="hero-label">
+            <span class="icon-dot">●</span>
+            Fast. Simple. Powerful.
+          </div>
 
-        <!-- Main Content -->
-        <main class="max-w-7xl mx-auto px-6 py-12">
-            <% if (posts && posts.length> 0) { %>
-                <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-                    <% posts.forEach(post=> { %>
-                        <div
-                            class="post-card bg-gradient-to-tr from-gray-900/40 to-gray-800/40 backdrop-blur-xl border border-white/10 rounded-3xl p-6 transition-transform duration-300">
-                            <h2 class="text-2xl font-bold text-white mb-2 hover:text-blue-400 transition">
-                                <a href="/posts/<%= post.slug %>">
-                                    <%= post.title %>
-                                </a>
-                            </h2>
-                            <p class="text-gray-400 mb-4 line-clamp-3">
-                                <%= post.excerpt %>
-                            </p>
-                            <div class="flex justify-between items-center text-sm text-gray-400 mb-3">
-                                <span>By <span class="font-medium">
-                                        <%= post.author_name %>
-                                    </span></span>
-                                <span>
-                                    <%= new Date(post.created_at).toLocaleDateString() %>
-                                </span>
-                            </div>
-                            <div class="flex gap-4 text-gray-400 text-sm mb-3">
-                                <span>💬 <%= post.comment_count %></span>
-                                <span>👍 <%= post.upvotes %></span>
-                                <span>👎 <%= post.downvotes %></span>
-                            </div>
-                            <div class="text-xs text-gray-500">
-                                Tags: <%= post.tags || 'none' %>
-                            </div>
-                            <div class="mt-4">
-                                <a href="/posts/<%= post.slug %>"
-                                    class="inline-block text-blue-400 hover:text-white font-medium">
-                                    Read More →
-                                </a>
-                            </div>
-                        </div>
-                        <% }) %>
+          <h1 class="hero-title">
+            Your Platform for<br/>
+            <span class="gradient-text">Technical Excellence</span>
+          </h1>
+
+          <p class="hero-subtitle">
+            Share deep technical insights, learn from expert developers, and grow your skills in a distraction-free environment.
+          </p>
+
+          <div class="hero-buttons">
+            <% if (currentUser) { %>
+              <a href="/posts/new/create" class="btn btn-primary btn-lg">
+                <span class="btn-icon">✏️</span> Write an Article
+              </a>
+              <a href="/posts" class="btn btn-outline btn-lg">
+                <span class="btn-icon">📖</span> Explore Articles
+              </a>
+            <% } else { %>
+              <a href="/auth/register" class="btn btn-primary btn-lg">
+                <span class="btn-icon">🚀</span> Get Started Free
+              </a>
+              <a href="/posts" class="btn btn-outline btn-lg">
+                <span class="btn-icon">📖</span> Browse Articles
+              </a>
+            <% } %>
+          </div>
+
+          <div class="hero-scroll">
+            <span>Discover great reads</span>
+            <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"/>
+            </svg>
+          </div>
+        </div>
+
+        <div class="hero-stats">
+          <div class="stat">
+            <div class="stat-number"><%= posts ? posts.length : 0 %></div>
+            <div class="stat-label">Articles</div>
+          </div>
+          <div class="stat-divider"></div>
+          <div class="stat">
+            <div class="stat-number">100%</div>
+            <div class="stat-label">Free</div>
+          </div>
+          <div class="stat-divider"></div>
+          <div class="stat">
+            <div class="stat-number">0</div>
+            <div class="stat-label">Ads</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- =============================================
+         FEATURED SECTION
+         ============================================= -->
+    <% if (posts && posts.length > 0) { %>
+      <% const featured = posts[0]; %>
+      <section class="featured-section">
+        <div class="section-label">⭐ Featured This Week</div>
+        
+        <a href="/posts/<%= featured.slug %>" class="featured-card-large">
+          <div class="featured-card-badge">
+            <% const emojis = ['💡','🔧','🚀','⚙️','🧠','💻','🔥','🌐','📊','🛠️']; %>
+            <%= emojis[Math.abs(featured.title.charCodeAt(0)) % emojis.length] %>
+          </div>
+          
+          <div class="featured-card-content">
+            <div class="featured-card-meta">
+              <% if (featured.tags) { %>
+                <% featured.tags.split(',').slice(0, 2).forEach(tag => { %>
+                  <span class="tag-mini">#<%= tag.trim() %></span>
+                <% }) %>
+              <% } %>
+              <span class="featured-dot">•</span>
+              <span class="featured-date"><%= new Date(featured.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) %></span>
+            </div>
+            
+            <h2 class="featured-card-title"><%= featured.title %></h2>
+            <p class="featured-card-desc"><%= featured.excerpt || featured.content.substring(0, 150) %></p>
+            
+            <div class="featured-card-author">
+              <div class="author-avatar">
+                <img src="https://api.dicebear.com/7.x/initials/svg?seed=<%= featured.author_name %>" alt="">
+              </div>
+              <div class="author-info">
+                <div class="author-name"><%= featured.author_name %></div>
+                <div class="author-read">5 min read</div>
+              </div>
+              <div class="read-arrow">→</div>
+            </div>
+          </div>
+        </a>
+      </section>
+
+      <!-- =============================================
+           LATEST ARTICLES
+           ============================================= -->
+      <section class="articles-section">
+        <div class="section-header">
+          <h2 class="section-title">Latest Articles</h2>
+          <a href="/posts" class="view-all">View All →</a>
+        </div>
+
+        <div class="articles-grid-home">
+          <% posts.slice(1, 4).forEach(post => { %>
+            <article class="card">
+              <div class="card-header">
+                <% if (post.tags) { %>
+                  <span class="tag-mini">#<%= post.tags.split(',')[0].trim() %></span>
+                <% } %>
+              </div>
+              
+              <h3 class="card-title">
+                <a href="/posts/<%= post.slug %>"><%= post.title %></a>
+              </h3>
+              
+              <p class="card-excerpt"><%= post.excerpt || post.content.substring(0, 100) %>...</p>
+              
+              <div class="card-footer">
+                <div class="card-author">
+                  <img src="https://api.dicebear.com/7.x/initials/svg?seed=<%= post.author_name %>" alt="" class="card-avatar">
+                  <span><%= post.author_name %></span>
                 </div>
-                <% } else { %>
-                    <p class="text-gray-400 text-center mt-10 text-lg">No posts yet. Stay tuned!</p>
-                    <% } %>
-        </main>
+                <span class="card-date"><%= new Date(post.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) %></span>
+              </div>
+            </article>
+          <% }) %>
+        </div>
 
-        <!-- Footer -->
+        <% if (posts.length > 3) { %>
+          <div class="cta-section">
+            <p>Interested in more? We have <%= posts.length %> articles in total.</p>
+            <a href="/posts" class="btn btn-primary">Explore All</a>
+          </div>
+        <% } %>
+      </section>
+
+    <% } else { %>
+      <!-- Empty state -->
+      <section class="empty-section">
+        <div class="empty-icon">📭</div>
+        <h2 class="empty-title">No Articles Yet</h2>
+        <p class="empty-desc">Be the first to share your knowledge with our community.</p>
+        <% if (currentUser) { %>
+          <a href="/posts/new/create" class="btn btn-primary">Write the First Article</a>
+        <% } else { %>
+          <a href="/auth/register" class="btn btn-primary">Join & Start Writing</a>
+        <% } %>
+      </section>
+    <% } %>
+
     <%- include('../partials/footer') %>
+  </div><!-- .page-wrap -->
 
 </body>
-
 </html>

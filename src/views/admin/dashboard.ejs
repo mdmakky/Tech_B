@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard | TechNest</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+
+<body>
+
+  <%- include('../partials/navbar') %>
+
+  <div class="admin-page">
+
+    <!-- Header -->
+    <div class="admin-header">
+      <div>
+        <h1 class="admin-title">🛠️ Admin Panel</h1>
+        <p class="admin-subtitle">Manage content and monitor platform activity</p>
+      </div>
+      <a href="/" class="btn btn-secondary btn-sm">← Back to Blog</a>
+    </div>
+
+    <!-- Flash Messages -->
+    <% if (success) { %>
+      <div class="alert alert-success">✅ <%= success %></div>
+    <% } %>
+    <% if (error) { %>
+      <div class="alert alert-error">❌ <%= error %></div>
+    <% } %>
+
+    <!-- Stats Cards -->
+    <div class="stats-grid">
+      <div class="stat-card indigo">
+        <div class="stat-value"><%= stats.postCount %></div>
+        <div class="stat-label">Total Posts</div>
+      </div>
+      <div class="stat-card green">
+        <div class="stat-value"><%= stats.userCount %></div>
+        <div class="stat-label">Total Users</div>
+      </div>
+      <div class="stat-card blue">
+        <div class="stat-value"><%= stats.publishedCount %></div>
+        <div class="stat-label">Published</div>
+      </div>
+      <div class="stat-card amber">
+        <div class="stat-value"><%= stats.totalViews.toLocaleString() %></div>
+        <div class="stat-label">Total Views</div>
+      </div>
+    </div>
+
+    <!-- Posts Table -->
+    <div class="admin-table-card">
+      <div class="admin-table-header">
+        <span class="admin-table-title">All Posts</span>
+        <span class="admin-table-count"><%= posts.length %> posts</span>
+      </div>
+
+      <div class="table-wrap">
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th>Title</th>
+              <th>Author</th>
+              <th>Status</th>
+              <th>Views</th>
+              <th>Comments</th>
+              <th>Date</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% if (posts.length === 0) { %>
+              <tr>
+                <td colspan="7" style="text-align:center;padding:48px;color:var(--text-muted)">No posts found.</td>
+              </tr>
+            <% } %>
+            <% posts.forEach(post => { %>
+              <tr>
+                <td>
+                  <a href="/posts/<%= post.slug %>" class="post-link"><%= post.title %></a>
+                </td>
+                <td><%= post.author_name %></td>
+                <td>
+                  <% if (post.is_published) { %>
+                    <span class="badge badge-green">● Published</span>
+                  <% } else { %>
+                    <span class="badge badge-amber">○ Draft</span>
+                  <% } %>
+                </td>
+                <td><%= (post.view_count || 0).toLocaleString() %></td>
+                <td><%= post.comment_count || 0 %></td>
+                <td style="font-size:0.8rem;color:var(--text-muted);white-space:nowrap">
+                  <%= new Date(post.created_at).toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' }) %>
+                </td>
+                <td>
+                  <div class="table-actions">
+                    <form action="/admin/posts/<%= post.id %>/toggle-publish" method="POST">
+                      <button type="submit" class="btn btn-sm <%= post.is_published ? 'btn-warning' : 'btn-success' %>">
+                        <%= post.is_published ? 'Unpublish' : 'Publish' %>
+                      </button>
+                    </form>
+                    <a href="/posts/<%= post.slug %>/edit" class="btn btn-secondary btn-sm">Edit</a>
+                    <form action="/admin/posts/<%= post.id %>/delete" method="POST" style="display:inline"
+                          onsubmit="return confirm('Delete this post permanently?')">
+                      <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                    </form>
+                  </div>
+                </td>
+              </tr>
+            <% }) %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <p style="text-align:center;color:var(--text-muted);font-size:0.75rem;margin-top:24px">
+      TechNest Admin Panel
+    </p>
+
+  </div>
+
+  <%- include('../partials/footer') %>
+
+</body>
+</html>

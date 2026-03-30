@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= title %></title>
+  <meta name="description" content="<%= metaDescription || 'Browse all published articles on TechNest.' %>">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+
+<body>
+
+  <%- include('../partials/navbar') %>
+
+  <div class="articles-page-v2">
+
+    <!-- Page Header -->
+    <header class="articles-header">
+      <div class="articles-header-content">
+        <div class="header-label">
+          <span class="dot">●</span>
+          Explore & Learn
+        </div>
+        <h1 class="articles-title">All Articles</h1>
+        <p class="articles-subtitle">Discover <%= posts ? posts.length : 0 %> carefully curated articles from our community of developers.</p>
+      </div>
+    </header>
+
+    <!-- Flash Messages -->
+    <% if (success) { %>
+      <div class="alert alert-success">✅ <%= success %></div>
+    <% } %>
+    <% if (error) { %>
+      <div class="alert alert-error">❌ <%= error %></div>
+    <% } %>
+
+    <!-- Toolbar -->
+    <div class="articles-toolbar-v2">
+      <% if (currentUser) { %>
+        <a href="/posts/new/create" class="btn btn-primary btn-sm">
+          <span class="btn-icon">✏️</span> Write Article
+        </a>
+      <% } %>
+    </div>
+
+    <!-- Articles List -->
+    <div class="articles-container">
+      <% if (posts && posts.length > 0) { %>
+        <% posts.forEach((post, i) => { %>
+          <article class="article-item">
+            <div class="article-count">#<%= String(i + 1).padStart(2, '0') %></div>
+            
+            <div class="article-content">
+              <div class="article-tags">
+                <% if (post.tags) { %>
+                  <% post.tags.split(',').slice(0, 1).forEach(tag => { %>
+                    <span class="tag">#<%= tag.trim() %></span>
+                  <% }) %>
+                <% } %>
+              </div>
+              
+              <h2 class="article-title">
+                <a href="/posts/<%= post.slug %>"><%= post.title %></a>
+              </h2>
+              
+              <p class="article-preview"><%= post.excerpt || post.content.substring(0, 120) %>...</p>
+              
+              <div class="article-meta">
+                <div class="meta-left">
+                  <div class="article-author-info">
+                    <img src="https://api.dicebear.com/7.x/initials/svg?seed=<%= post.author_name %>" alt="" class="article-avatar">
+                    <div>
+                      <div class="author-name"><%= post.author_name %></div>
+                      <div class="author-date"><%= new Date(post.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) %></div>
+                    </div>
+                  </div>
+                </div>
+                
+                <div class="meta-right">
+                  <span class="meta-stat" title="Comments">💬 <%= post.comment_count || 0 %></span>
+                  <span class="meta-stat" title="Views">👁 <%= post.view_count || 0 %></span>
+                  <a href="/posts/<%= post.slug %>" class="article-link">Read →</a>
+                </div>
+              </div>
+            </div>
+          </article>
+        <% }) %>
+      <% } else { %>
+        <div class="empty-state-articles">
+          <div class="empty-icon-lg">📭</div>
+          <h3 class="empty-title">No Articles Yet</h3>
+          <p class="empty-text">Be the first to share your knowledge and expertise with our community.</p>
+          <% if (currentUser) { %>
+            <a href="/posts/new/create" class="btn btn-primary">Write the First Article</a>
+          <% } else { %>
+            <a href="/auth/register" class="btn btn-primary">Join & Start Writing</a>
+          <% } %>
+        </div>
+      <% } %>
+    </div>
+
+  </div>
+
+  <%- include('../partials/footer') %>
+
+</body>
+</html>
