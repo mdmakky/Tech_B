@@ -74,11 +74,13 @@
         <span class="vote-label">Was this article helpful?</span>
         <% if (currentUser) { %>
           <form action="/votes/<%= post.id %>/up" method="POST" style="display:inline">
+            <input type="hidden" name="returnTo" value="/posts/<%= post.slug %>">
             <button type="submit" class="vote-btn <%= userVote === 'up' ? 'up-active' : '' %>">
               👍 <span><%= post.upvotes %></span>
             </button>
           </form>
           <form action="/votes/<%= post.id %>/down" method="POST" style="display:inline">
+            <input type="hidden" name="returnTo" value="/posts/<%= post.slug %>">
             <button type="submit" class="vote-btn <%= userVote === 'down' ? 'down-active' : '' %>">
               👎 <span><%= post.downvotes %></span>
             </button>
@@ -152,6 +154,7 @@
         <form action="/comments/add" method="POST" class="comment-form">
           <input type="hidden" name="post_id" value="<%= post.id %>">
           <input type="hidden" name="post_slug" value="<%= post.slug %>">
+          <input type="hidden" name="returnTo" value="/posts/<%= post.slug %>#comments">
           <div class="form-group">
             <textarea name="content" rows="3" required
                       placeholder="Share your thoughts..."
@@ -194,6 +197,8 @@
             </div>
             <% if (currentUser && (currentUser.id === comment.user_id || currentUser.role === 'admin')) { %>
               <form action="/comments/<%= comment.id %>/delete" method="POST" style="display:inline">
+                <input type="hidden" name="post_slug" value="<%= post.slug %>">
+                <input type="hidden" name="returnTo" value="/posts/<%= post.slug %>#comments">
                 <button type="submit" class="btn btn-danger btn-sm"
                         onclick="return confirm('Delete this comment?')">Delete</button>
               </form>
@@ -213,6 +218,7 @@
                 <input type="hidden" name="post_id" value="<%= post.id %>">
                 <input type="hidden" name="post_slug" value="<%= post.slug %>">
                 <input type="hidden" name="parent_id" value="<%= comment.id %>">
+                <input type="hidden" name="returnTo" value="/posts/<%= post.slug %>#comments">
                 <textarea name="content" rows="2" required
                           placeholder="Write a reply..."
                           class="form-input form-textarea"
@@ -244,6 +250,8 @@
                     </div>
                     <% if (currentUser && (currentUser.id === reply.user_id || currentUser.role === 'admin')) { %>
                       <form action="/comments/<%= reply.id %>/delete" method="POST" style="display:inline">
+                        <input type="hidden" name="post_slug" value="<%= post.slug %>">
+                        <input type="hidden" name="returnTo" value="/posts/<%= post.slug %>#comments">
                         <button type="submit" class="btn btn-danger btn-sm"
                                 onclick="return confirm('Delete this reply?')">Delete</button>
                       </form>

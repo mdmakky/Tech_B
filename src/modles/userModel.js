@@ -1,6 +1,11 @@
 import { pool } from "../config/db.js";
 
 const userModel = {
+    async ensureModerationColumns() {
+        await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS is_banned BOOLEAN NOT NULL DEFAULT false`);
+        await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS is_restricted BOOLEAN NOT NULL DEFAULT false`);
+    },
+
     async findByEmail(email){
         const result = await pool.query(
             'SELECT * FROM users WHERE email = $1',
@@ -51,6 +56,30 @@ const userModel = {
             'SELECT COUNT(*) FROM users'
         )
         return parseInt(result.rows[0].count); 
+    },
+
+    async toggleBan(userId) {
+        const result = await pool.query(
+            `UPDATE users
+             SET is_banned = NOT COALESCE(is_banned, false), updated_at = NOW()
+             WHERE id = $1 AND role <> 'admin'
+             RETURNING id, username, is_banned`,
+            [userId]
+        );
+
+        return result.rows[0] || null;
+    },
+
+    async toggleRestriction(userId) {
+        const result = await pool.query(
+            `UPDATE users
+             SET is_restricted = NOT COALESCE(is_restricted, false), updated_at = NOW()
+             WHERE id = $1 AND role <> 'admin'
+             RETURNING id, username, is_restricted`,
+            [userId]
+        );
+
+        return result.rows[0] || null;
     }
     
 }

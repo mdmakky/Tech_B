@@ -1,5 +1,6 @@
 import { userModel } from "../modles/userModel.js";
 import bcrypt from "bcryptjs";
+import { verifyEmailAddress } from "../utils/emailVerifier.js";
 
 const authController = {
     showRegister(req, res) {
@@ -30,7 +31,15 @@ const authController = {
                 return res.redirect('/auth/register');
             }
 
-            const emailExists = await userModel.emailExists(email);
+            const normalizedEmail = email.trim().toLowerCase();
+            const emailCheck = await verifyEmailAddress(normalizedEmail);
+
+            if (!emailCheck.isValid) {
+                req.session.error = emailCheck.reason;
+                return res.redirect('/auth/register');
+            }
+
+            const emailExists = await userModel.emailExists(normalizedEmail);
 
             if (emailExists) {
                 console.log("This email is alredy in use");
@@ -47,7 +56,7 @@ const authController = {
             }
 
             const hashPassword = await bcrypt.hash(password, 12);
-            const user = await userModel.createNewUser({ username, email, password: hashPassword });
+            const user = await userModel.createNewUser({ username, email: normalizedEmail, password: hashPassword });
 
             console.log("User created:", user);
 
@@ -73,13 +82,20 @@ const authController = {
     async login(req, res) {
         try {
             const { email, password } = req.body;
-            const mailExists = await userModel.emailExists(email)
+            const normalizedEmail = email.trim().toLowerCase();
+            const mailExists = await userModel.emailExists(normalizedEmail)
             if (!mailExists) {
                 console.log("Email does not exist with a corrosponding account")
                 req.session.error = "Invalid email id.."
                 return res.redirect('/auth/login')
             }
-            const user = await userModel.findByEmail(email)
+            const user = await userModel.findByEmail(normalizedEmail)
+
+            if (user.is_banned) {
+                req.session.error = "Your account has been suspended by admin.";
+                return res.redirect('/auth/login');
+            }
+
             const passwordMatch = await bcrypt.compare(password, user.password)
             
             if (!passwordMatch) {
