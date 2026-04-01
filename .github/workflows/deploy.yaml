@@ -18,10 +18,10 @@ jobs:
         with:
           host: ${{ secrets.SSH_HOST }}
           username: muse
-          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
             cd /home/muse/Tech_B
             git pull 
-            docker-compose down
-            docker-compose up -d --build
+            docker compose down
+            docker compose up -d --build
 
