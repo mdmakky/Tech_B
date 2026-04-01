@@ -1,0 +1,27 @@
+name: Deploy node.js app to my server
+
+on:
+  push:
+    branches: 
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@1.1.7
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: muse
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            cd /home/muse/Tech_B
+            git pull 
+            docker-compose down
+            docker-compose up -d --build
+
