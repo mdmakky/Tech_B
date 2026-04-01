@@ -7,21 +7,12 @@ on:
 
 jobs:
   deploy:
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Deploy via SSH
-        uses: appleboy/ssh-action@master
-        with:
-          host: ${{ secrets.SSH_HOST }}
-          username: muse
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          script: |
-            cd /home/muse/Tech_B
-            git pull 
-            docker compose down
-            docker compose up -d --build
-
+      - name: Deploy App
+        run: |
+          cd /home/muse/Tech_B
+          git pull
+          docker compose down
+          docker compose up -d --build
